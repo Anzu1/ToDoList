@@ -19,12 +19,12 @@ struct item {
 class ItemsManager: NSObject {
     
     var items = [item]() //variable holding array of items initialized with nothing
-    
+    var entity: NSEntityDescription!;
     func addItem(name: String, details: String) {
         //items.append(item(name: name, details:  details))
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         let manageContext = appDelegate.managedObjectContext!
-        let entity = NSEntityDescription.entityForName("Item", inManagedObjectContext: manageContext)
+        entity = NSEntityDescription.entityForName("Item", inManagedObjectContext: manageContext)
         let itemMO = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: manageContext)
      
         itemMO.setValue(name, forKey: "name")
@@ -35,6 +35,18 @@ class ItemsManager: NSObject {
         if !manageContext.save(&error)
         {
             println("Could not save! \(error) \(error?.userInfo)")
+        }
+    }
+    
+    func deleteItem(item: NSManagedObject) {
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let manageContext = appDelegate.managedObjectContext!
+        manageContext.deleteObject(item)
+        
+        var error: NSError?
+        
+        if(manageContext.save(&error)==false) {
+            println("Could not save!\(error) \(error?.userInfo)")
         }
     }
 }

@@ -7,9 +7,10 @@
 //
 
 import UIKit
+import CoreData
 
 class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-
+    var items = [Item]()
     @IBOutlet weak var itemsTableView: UITableView!
     
     override func viewDidLoad() {
@@ -18,7 +19,7 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        itemsTableView.reloadData()
+        fetchData()
     }
     
     override func didReceiveMemoryWarning() {
@@ -27,21 +28,42 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return itemsMgr.items.count
+        return items.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell: UITableViewCell = UITableViewCell(style: UITableViewCellStyle.Subtitle, reuseIdentifier: "CellId")
-        cell.textLabel!.text = itemsMgr.items[indexPath.row].name
-        cell.detailTextLabel!.text = itemsMgr.items[indexPath.row].details
+        let item = items[indexPath.row]
+        
+        cell.textLabel!.text = item.name
+        cell.detailTextLabel!.text = item.details
         
         return cell
     }
     
+    func fetchData() {
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let manageContext = appDelegate.managedObjectContext!
+
+        let fetchRequest = NSFetchRequest(entityName: "Item")
+        
+        var error: NSError?
+        
+        let fetchResults = manageContext.executeFetchRequest(fetchRequest, error: &error) as? [Item]
+        
+        if let results = fetchResults {
+            items = results
+        } else {
+            println("Could not fetch \(error), \(error!.userInfo)")
+        }
+        itemsTableView.reloadData()
+    }
+    
+    //usuwanie
     func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         if (editingStyle == UITableViewCellEditingStyle.Delete) {
-            itemsMgr.items.removeAtIndex(indexPath.row)
-            itemsTableView.reloadData()
+            itemsMgr.deleteItem(items[indexPath.row])
+            fetchData()
         }
         
     }
