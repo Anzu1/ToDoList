@@ -6,7 +6,8 @@
 //  Copyright (c) 2015 appcamp. All rights reserved.
 //
 
-import Foundation
+import UIKit
+import CoreData
 
 var itemsMgr: ItemsManager = ItemsManager()
 
@@ -20,6 +21,20 @@ class ItemsManager: NSObject {
     var items = [item]() //variable holding array of items initialized with nothing
     
     func addItem(name: String, details: String) {
-        items.append(item(name: name, details:  details))
+        //items.append(item(name: name, details:  details))
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let manageContext = appDelegate.managedObjectContext!
+        let entity = NSEntityDescription.entityForName("Item", inManagedObjectContext: manageContext)
+        let itemMO = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: manageContext)
+     
+        itemMO.setValue(name, forKey: "name")
+        itemMO.setValue(details, forKey: "details")
+        
+        var error: NSError?
+        
+        if !manageContext.save(&error)
+        {
+            println("Could not save! \(error) \(error?.userInfo)")
+        }
     }
 }
